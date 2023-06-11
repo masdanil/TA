@@ -1,0 +1,73 @@
+
+//@version=5
+indicator(title="WaveTrend with Crosses [LazyBear] version 5 by DW", shorttitle="WT_CROSS_LB")
+n1 = input(10, "Channel Length")
+n2 = input(21, "Average Length")
+obLevel1 = input(60, "Over Bought Level 1")
+obLevel2 = input(53, "Over Bought Level 2")
+osLevel1 = input(-60, "Over Sold Level 1")
+osLevel2 = input(-53, "Over Sold Level 2")
+ 
+ap = hlc3 
+esa = ta.ema(ap, n1)
+d = ta.ema(math.abs(ap - esa), n1)
+ci = (ap - esa) / (0.015 * d)
+tci = ta.ema(ci, n2)
+ 
+wt1 = tci // faster
+wt2 = ta.sma(wt1,4) // slower (lagging)
+
+plot(0, color=color.gray)
+plot(obLevel1, color=color.red)
+plot(osLevel1, color=color.green)
+plot(obLevel2, color=color.red)
+plot(osLevel2, color=color.green)
+
+plot(wt1, color=color.green) 
+plot(wt2, color=color.red)  
+
+diffs = wt1-wt2
+condition = ta.cross(wt1, wt2) 
+
+plot(diffs, color= color.rgb(212, 238, 80, 50), style= plot.style_area)
+plot(condition ? wt1 : na, color = (diffs > 0 ? color.lime : color.red) , style = plot.style_circles, linewidth = 5)
+barcolor(condition ? diffs > 0 ? color.white: color.black : na)
+
+
+
+
+
+
+
+
+
+
+
+================================
+//@version=5
+strategy("test", overlay = true)
+
+n1 = 10
+n2 = 21
+ap = hlc3 
+esa = ta.ema(ap, n1)
+d = ta.ema(math.abs(ap - esa), n1)
+ci = (ap - esa) / (0.015 * d)
+tci = ta.ema(ci, n2)
+wt1 = tci // faster
+wt2 = ta.sma(wt1,4) // slower (lagging)
+diffs = wt1-wt2
+condition = ta.cross(wt1, wt2) 
+
+i_from = input.time(defval = timestamp("01 Jan 2022 00:00 +0000"), title = "From")
+i_thru = input.time(defval = timestamp("01 Mar 2024 00:00 +0000"), title = "Thru")
+date() => time >= i_from and time <= i_thru
+
+
+buy_condition  = date() and ta.cross(wt1, wt2) and diffs >0 and wt1 < -50
+sell_condition  = date() and ta.cross(wt1, wt2) and diffs <0 and wt1 > 0 
+
+if buy_condition
+    strategy.entry("buy",  strategy.long, 100)
+if sell_condition
+    strategy.exit("exit", "buy",  profit = 10, loss = 5)
