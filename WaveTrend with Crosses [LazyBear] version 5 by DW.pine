@@ -71,3 +71,6 @@ if buy_condition
     strategy.entry("buy",  strategy.long, 100)
 if sell_condition
     strategy.exit("exit", "buy",  profit = 10, loss = 5)
+
+// reference :
+// https://www.tradingview.com/script/62hUcP6O-How-To-Set-Backtest-Date-Range/
